@@ -1,0 +1,7 @@
+.venv
+indobert_sentiment_model
+results
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints/
