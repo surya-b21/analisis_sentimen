@@ -1,0 +1,44 @@
+{
+  "model": "Naive Bayes + TF-IDF",
+  "overall_metrics": {
+    "accuracy": 0.6909090909090909,
+    "accuracy_percentage": 69.0909090909091
+  },
+  "per_class_metrics": {
+    "negative": {
+      "precision": 0.8518518518518519,
+      "recall": 0.4339622641509434,
+      "f1": 0.575
+    },
+    "positive": {
+      "precision": 0.6385542168674698,
+      "recall": 0.9298245614035088,
+      "f1": 0.7571428571428571
+    }
+  },
+  "confusion_matrix": {
+    "matrix": [
+      [
+        23,
+        30
+      ],
+      [
+        4,
+        53
+      ]
+    ],
+    "labels": [
+      "negative",
+      "positive"
+    ]
+  },
+  "dataset_info": {
+    "total_samples": 550,
+    "train_samples": 440,
+    "test_samples": 110,
+    "classes": [
+      "negative",
+      "positive"
+    ]
+  }
+}

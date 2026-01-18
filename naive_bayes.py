@@ -1,12 +1,13 @@
 import pandas as pd
 import nltk
+import json
 
 from nltk.corpus import stopwords
 from sklearn.model_selection import train_test_split
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, precision_recall_fscore_support
 
 
 # download required nltk data
@@ -96,6 +97,46 @@ def main():
         columns=[f'Predicted {label}' for label in labels_list]
     )
     print(conf_df)
+
+    # Calculate per-class metrics
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        test_labels, predictions, average=None
+    )
+
+    # Prepare results for JSON export
+    per_class_metrics = {}
+    for idx, label in enumerate(labels_list):
+        per_class_metrics[label] = {
+            'precision': float(precision[idx]),
+            'recall': float(recall[idx]),
+            'f1': float(f1[idx])
+        }
+
+    results = {
+        'model': 'Naive Bayes + TF-IDF',
+        'overall_metrics': {
+            'accuracy': float(accuracy),
+            'accuracy_percentage': float(accuracy * 100)
+        },
+        'per_class_metrics': per_class_metrics,
+        'confusion_matrix': {
+            'matrix': conf_matrix.tolist(),
+            'labels': labels_list
+        },
+        'dataset_info': {
+            'total_samples': len(data),
+            'train_samples': len(train_texts),
+            'test_samples': len(test_texts),
+            'classes': labels_list
+        }
+    }
+
+    # Save to JSON
+    with open('naive_bayes_tfidf_results.json', 'w', encoding='utf-8') as f:
+        json.dump(results, f, ensure_ascii=False, indent=2)
+    
+    print("\n✅ Results saved to naive_bayes_tfidf_results.json")
+    
 
 if __name__ == "__main__":
     main()

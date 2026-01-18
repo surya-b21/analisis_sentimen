@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import json
 
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from sklearn.model_selection import train_test_split
@@ -112,6 +113,47 @@ def main():
         columns=[f'Predicted {label}' for label in labels_list]
     )
     print(conf_df)
+
+    # Prepare results for JSON export
+    per_class_metrics = {}
+    for idx, label in enumerate(labels_list):
+        per_class_metrics[label] = {
+            'precision': float(precision[idx]),
+            'recall': float(recall[idx]),
+            'f1': float(f1[idx])
+        }
+
+    results = {
+        'model': 'IndoBERT',
+        'model_name': 'indobenchmark/indobert-base-p1',
+        'overall_metrics': {
+            'accuracy': float(accuracy),
+            'accuracy_percentage': float(accuracy * 100)
+        },
+        'per_class_metrics': per_class_metrics,
+        'confusion_matrix': {
+            'matrix': conf_matrix.tolist(),
+            'labels': labels_list
+        },
+        'dataset_info': {
+            'total_samples': len(df),
+            'train_samples': len(train_df),
+            'test_samples': len(test_df),
+            'classes': labels_list
+        },
+        'training_config': {
+            'num_epochs': 3,
+            'batch_size': 8,
+            'max_length': 128,
+            'learning_rate': 2e-5
+        }
+    }
+
+    # Save to JSON
+    with open('indobert_results.json', 'w', encoding='utf-8') as f:
+        json.dump(results, f, ensure_ascii=False, indent=2)
+    
+    print("\n✅ Results saved to indobert_results.json")
 
 if __name__ == "__main__":
     main()
