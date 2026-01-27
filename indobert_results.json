@@ -2,30 +2,30 @@
   "model": "IndoBERT",
   "model_name": "indobenchmark/indobert-base-p1",
   "overall_metrics": {
-    "accuracy": 0.8857142857142857,
-    "accuracy_percentage": 88.57142857142857
+    "accuracy": 0.8424242424242424,
+    "accuracy_percentage": 84.24242424242424
   },
   "per_class_metrics": {
     "negative": {
-      "precision": 0.9041095890410958,
-      "recall": 0.88,
-      "f1": 0.8918918918918919
+      "precision": 0.8130841121495327,
+      "recall": 0.9354838709677419,
+      "f1": 0.87
     },
     "positive": {
-      "precision": 0.8656716417910447,
-      "recall": 0.8923076923076924,
-      "f1": 0.8787878787878788
+      "precision": 0.896551724137931,
+      "recall": 0.7222222222222222,
+      "f1": 0.8
     }
   },
   "confusion_matrix": {
     "matrix": [
       [
-        66,
-        9
+        87,
+        6
       ],
       [
-        7,
-        58
+        20,
+        52
       ]
     ],
     "labels": [
@@ -34,9 +34,9 @@
     ]
   },
   "dataset_info": {
-    "total_samples": 700,
-    "train_samples": 560,
-    "test_samples": 140,
+    "total_samples": 825,
+    "train_samples": 660,
+    "test_samples": 165,
     "classes": [
       "negative",
       "positive"
