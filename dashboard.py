@@ -331,10 +331,11 @@ elif selected_page == "🤖 Naive Bayes":
         
         with col2:
             conf_matrix = np.array(nb_results['confusion_matrix']['matrix'])
+            labels_list = ['Negative', 'Positive', 'Neutral']
             fig = go.Figure(data=go.Heatmap(
                 z=conf_matrix,
-                x=['Negative', 'Positive'],
-                y=['Negative', 'Positive'],
+                x=labels_list,
+                y=labels_list,
                 text=conf_matrix,
                 texttemplate='%{text}',
                 colorscale='Blues'
@@ -396,10 +397,11 @@ elif selected_page == "🧠 IndoBERT":
         
         with col2:
             conf_matrix = np.array(bert_results['confusion_matrix']['matrix'])
+            labels_list = ['Negative', 'Positive', 'Neutral']
             fig = go.Figure(data=go.Heatmap(
                 z=conf_matrix,
-                x=['Negative', 'Positive'],
-                y=['Negative', 'Positive'],
+                x=labels_list,
+                y=labels_list,
                 text=conf_matrix,
                 texttemplate='%{text}',
                 colorscale='Greens'
@@ -458,8 +460,10 @@ elif selected_page == "📊 Perbandingan":
         st.subheader("📋 Perbandingan Metrik")
         
         comparison_data = {
-            'Metrik': ['Accuracy', 'Precision (Neg)', 'Recall (Neg)', 'F1 (Neg)',
-                      'Precision (Pos)', 'Recall (Pos)', 'F1 (Pos)'],
+            'Metrik': ['Accuracy', 
+                      'Precision (Neg)', 'Recall (Neg)', 'F1 (Neg)',
+                      'Precision (Pos)', 'Recall (Pos)', 'F1 (Pos)',
+                      'Precision (Neutral)', 'Recall (Neutral)', 'F1 (Neutral)'],
             'Naive Bayes': [
                 f"{nb_results['overall_metrics']['accuracy_percentage']:.2f}%",
                 f"{nb_results['per_class_metrics']['negative']['precision']:.4f}",
@@ -467,7 +471,10 @@ elif selected_page == "📊 Perbandingan":
                 f"{nb_results['per_class_metrics']['negative']['f1']:.4f}",
                 f"{nb_results['per_class_metrics']['positive']['precision']:.4f}",
                 f"{nb_results['per_class_metrics']['positive']['recall']:.4f}",
-                f"{nb_results['per_class_metrics']['positive']['f1']:.4f}"
+                f"{nb_results['per_class_metrics']['positive']['f1']:.4f}",
+                f"{nb_results['per_class_metrics']['neutral']['precision']:.4f}",
+                f"{nb_results['per_class_metrics']['neutral']['recall']:.4f}",
+                f"{nb_results['per_class_metrics']['neutral']['f1']:.4f}"
             ],
             'IndoBERT': [
                 f"{bert_results['overall_metrics']['accuracy_percentage']:.2f}%",
@@ -476,7 +483,10 @@ elif selected_page == "📊 Perbandingan":
                 f"{bert_results['per_class_metrics']['negative']['f1']:.4f}",
                 f"{bert_results['per_class_metrics']['positive']['precision']:.4f}",
                 f"{bert_results['per_class_metrics']['positive']['recall']:.4f}",
-                f"{bert_results['per_class_metrics']['positive']['f1']:.4f}"
+                f"{bert_results['per_class_metrics']['positive']['f1']:.4f}",
+                f"{bert_results['per_class_metrics']['neutral']['precision']:.4f}",
+                f"{bert_results['per_class_metrics']['neutral']['recall']:.4f}",
+                f"{bert_results['per_class_metrics']['neutral']['f1']:.4f}"
             ]
         }
         
@@ -489,10 +499,11 @@ elif selected_page == "📊 Perbandingan":
         
         with col1:
             nb_conf = np.array(nb_results['confusion_matrix']['matrix'])
+            labels_list = ['Negative', 'Positive', 'Neutral']
             fig = go.Figure(data=go.Heatmap(
                 z=nb_conf,
-                x=['Negative', 'Positive'],
-                y=['Negative', 'Positive'],
+                x=labels_list,
+                y=labels_list,
                 text=nb_conf,
                 texttemplate='%{text}',
                 colorscale='Blues'
@@ -502,10 +513,11 @@ elif selected_page == "📊 Perbandingan":
         
         with col2:
             bert_conf = np.array(bert_results['confusion_matrix']['matrix'])
+            labels_list = ['Negative', 'Positive', 'Neutral']
             fig = go.Figure(data=go.Heatmap(
                 z=bert_conf,
-                x=['Negative', 'Positive'],
-                y=['Negative', 'Positive'],
+                x=labels_list,
+                y=labels_list,
                 text=bert_conf,
                 texttemplate='%{text}',
                 colorscale='Greens'

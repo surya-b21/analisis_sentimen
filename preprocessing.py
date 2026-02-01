@@ -1,9 +1,5 @@
-# lakukan noise removal kecual tanda ? dan !
-# normalisasi menggunakan slang_dict_combined.csv
-
 import pandas as pd
 import re
-import nltk
 
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
