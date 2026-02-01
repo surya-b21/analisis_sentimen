@@ -5,3 +5,5 @@ __pycache__/
 *.pyc
 .DS_Store
 .ipynb_checkpoints/
+naive_bayes_tfidf_model.joblib
+tfidf_vectorizer.joblib

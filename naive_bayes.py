@@ -1,6 +1,8 @@
+import os
 import pandas as pd
 import nltk
 import json
+import joblib
 
 from nltk.corpus import stopwords
 from sklearn.model_selection import train_test_split
@@ -38,7 +40,7 @@ def preprocessing_text(text):
 
 # read csv file
 def read_csv():
-    df = pd.read_csv('dataset_used.csv', encoding='utf-8', on_bad_lines='skip', engine='python')
+    df = pd.read_csv('vader_result.csv', encoding='utf-8', on_bad_lines='skip', engine='python')
     df.columns = df.columns.str.strip()  # Remove whitespace from column names
     data = []
 
@@ -49,6 +51,32 @@ def read_csv():
         data.append((processed_text, sentiment))
 
     return data
+
+# predict new input using trained model
+def predict_sentiment(text):
+    try:
+        if not os.path.exists('naive_bayes_tfidf_model.joblib') or not os.path.exists('tfidf_vectorizer.joblib'):
+            return {
+                'error': 'Model or vectorizer file not found. Please train the model first.'
+            }
+        
+        # Load the trained model and vectorizer
+        model = joblib.load('naive_bayes_tfidf_model.joblib')
+        vectorizer = joblib.load('tfidf_vectorizer.joblib')
+
+        # Preprocess the input text
+        processed_text = preprocessing_text(text)
+
+        # Vectorize the input text
+        X_input = vectorizer.transform([processed_text])
+
+        # Predict sentiment
+        prediction = model.predict(X_input)
+        return prediction[0]
+    except Exception as e:
+        return {
+            'error': f'An error occurred during prediction: {str(e)}'
+        }
 
 def main():
     print("Loading data...")
@@ -136,6 +164,11 @@ def main():
         json.dump(results, f, ensure_ascii=False, indent=2)
     
     print("\n✅ Results saved to naive_bayes_tfidf_results.json")
+
+    # Save trained model and vectorizer using joblib
+    joblib.dump(model, 'naive_bayes_tfidf_model.joblib')
+    joblib.dump(vectorizer, 'tfidf_vectorizer.joblib')
+    print("✅ Model and vectorizer saved to naive_bayes_tfidf_model.joblib and tfidf_vectorizer.joblib")
     
 
 if __name__ == "__main__":

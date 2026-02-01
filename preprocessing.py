@@ -144,8 +144,6 @@ def main():
     processed_df = pd.DataFrame(processed_data)
     processed_df.to_csv('vader_result.csv', index=False, encoding='utf-8')
     print("Processed data saved to vader_result.csv")
-    
-    # Count sentiments
 
 if __name__ == "__main__":
     main()

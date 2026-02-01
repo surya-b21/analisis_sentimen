@@ -4,9 +4,11 @@ import numpy as np
 import json
 import subprocess
 import os
-from datetime import datetime
 import plotly.graph_objects as go
-import plotly.express as px
+
+from datetime import datetime
+from naive_bayes import predict_sentiment as nb_predict
+from bert import predict_sentiment as bert_predict
 
 # Set page config
 st.set_page_config(
@@ -35,10 +37,10 @@ def load_results(filename):
     return None
 
 def get_dataset_info():
-    """Baca dataset_used.csv dan kembalikan informasi dataset"""
+    """Baca vader_result.csv dan kembalikan informasi dataset"""
     try:
         df = pd.read_csv(
-            'dataset_used.csv',
+            'vader_result.csv',
             encoding='utf-8',
             on_bad_lines='skip',
             engine='python'
@@ -59,6 +61,23 @@ def get_dataset_info():
     except Exception as e:
         print(f"Error reading dataset: {e}")
         return None
+
+def run_preprocessing():
+    """Run preprocessing.py to generate vader_result.csv"""
+    script = "preprocessing.py"
+    with st.spinner("Menjalankan preprocessing data..."):
+        result = subprocess.run(
+            ["/Users/surya/Documents/Projects/thesis/.venv/bin/python", script],
+            cwd="/Users/surya/Documents/Projects/thesis",
+            capture_output=True,
+            text=True
+        )
+        if result.returncode == 0:
+            st.success("✅ Preprocessing selesai!")
+            return True
+        else:
+            st.error(f"❌ Error: {result.stderr}")
+            return False
 
 def run_training(model_type):
     if model_type == "naive_bayes":
@@ -109,6 +128,7 @@ if selected_page == "📈 Overview":
         - **Distribusi**:
           - Negative: {dataset_info['label_counts'].get('negative', 0)}
           - Positive: {dataset_info['label_counts'].get('positive', 0)}
+          - Neutral: {dataset_info['label_counts'].get('neutral', 0)}
         """)
         else:
             st.info("""
@@ -116,7 +136,7 @@ if selected_page == "📈 Overview":
         - **Sumber**: YouTube & TikTok Comments
         - **Tema**: Timnas Indonesia
         - **Data Bersih**: ~ sampel
-        - **Label**: Negative, Positive
+        - **Label**: Negative, Positive, Neutral
         """)
     
     with col2:
@@ -127,6 +147,16 @@ if selected_page == "📈 Overview":
         
         Tujuan: Perbandingan akurasi dan performa
         """)
+
+    # Preprocessing Button
+    if os.path.exists('vader_result.csv'):
+        st.success("✅ Preprocessing sudah dijalankan. vader_result.csv tersedia.")
+    else:
+        st.warning("⚠️ Preprocessing belum dijalankan. Silakan jalankan preprocessing terlebih dahulu.")
+
+    if st.button("▶️ Jalankan Preprocessing", use_container_width=True):
+        if run_preprocessing():
+            st.rerun()
     
     st.divider()
     
@@ -144,6 +174,10 @@ if selected_page == "📈 Overview":
             st.metric("Accuracy", f"{nb_results['overall_metrics']['accuracy_percentage']:.2f}%")
         else:
             st.warning("⚠️ Belum dijalankan")
+
+        if st.button("▶️ Train Naive Bayes", use_container_width=True):
+            run_training("naive_bayes")
+            st.rerun()
     
     with col2:
         if bert_results:
@@ -151,23 +185,116 @@ if selected_page == "📈 Overview":
             st.metric("Accuracy", f"{bert_results['overall_metrics']['accuracy_percentage']:.2f}%")
         else:
             st.warning("⚠️ Belum dijalankan")
-    
-    st.divider()
-    
-    # Training Buttons
-    st.subheader("🚀 Jalankan Training")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        if st.button("▶️ Train Naive Bayes", use_container_width=True):
-            run_training("naive_bayes")
-            st.rerun()
-    
-    with col2:
         if st.button("▶️ Train IndoBERT", use_container_width=True):
             run_training("indobert")
             st.rerun()
+    
+    st.divider()
+
+    # Prediction Demo
+    st.subheader("🧪 Demo Prediksi Sentimen")
+    
+    # Text input with session state
+    default_text = st.session_state.get('demo_text', '')
+    user_input = st.text_area(
+        "Masukkan teks komentar:", 
+        value=default_text,
+        height=100,
+        placeholder="Contoh: Timnas Indonesia main bagus banget hari ini!"
+    )
+    
+    # Predict button
+    if st.button("🔍 Prediksi Sentimen", use_container_width=True):
+        if not user_input.strip():
+            st.warning("⚠️ Silakan masukkan teks terlebih dahulu.")
+        else:
+            # Get predictions
+            nb_prediction = nb_predict(user_input)
+            bert_prediction = bert_predict(user_input)
+            
+            st.markdown("#### Hasil Prediksi:")
+            
+            # Display results side by side
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**🤖 Naive Bayes + TF-IDF**")
+                if isinstance(nb_prediction, dict) and 'error' in nb_prediction:
+                    st.error(nb_prediction['error'])
+                elif isinstance(nb_prediction, dict):
+                    # Display sentiment with colored badge
+                    sentiment = nb_prediction['prediction']
+                    if sentiment == 'positive':
+                        st.success(f"**✅ {sentiment.upper()}**")
+                    elif sentiment == 'negative':
+                        st.error(f"**❌ {sentiment.upper()}**")
+                    else:
+                        st.info(f"**➖ {sentiment.upper()}**")
+                    
+                    # Display confidence
+                    st.metric("Confidence", f"{nb_prediction['confidence']*100:.2f}%")
+                    
+                    # Show probabilities
+                    with st.expander("📊 Lihat Probabilitas"):
+                        for label, prob in sorted(nb_prediction['probabilities'].items(), key=lambda x: x[1], reverse=True):
+                            st.write(f"{label.capitalize()}: {prob*100:.2f}%")
+                    
+                    # Show processed text
+                    if 'processed_text' in nb_prediction:
+                        with st.expander("🔍 Teks Setelah Preprocessing"):
+                            st.code(nb_prediction['processed_text'])
+                else:
+                    st.success(f"Prediksi: **{nb_prediction.capitalize()}**")
+            
+            with col2:
+                st.markdown("**🧠 IndoBERT**")
+                if isinstance(bert_prediction, dict) and 'error' in bert_prediction:
+                    st.error(bert_prediction['error'])
+                elif isinstance(bert_prediction, dict):
+                    # Display sentiment with colored badge
+                    sentiment = bert_prediction['prediction']
+                    if sentiment == 'positive':
+                        st.success(f"**✅ {sentiment.upper()}**")
+                    elif sentiment == 'negative':
+                        st.error(f"**❌ {sentiment.upper()}**")
+                    else:
+                        st.info(f"**➖ {sentiment.upper()}**")
+                    
+                    # Display confidence
+                    st.metric("Confidence", f"{bert_prediction['confidence']*100:.2f}%")
+                    
+                    # Show probabilities
+                    with st.expander("📊 Lihat Probabilitas"):
+                        for label, prob in sorted(bert_prediction['probabilities'].items(), key=lambda x: x[1], reverse=True):
+                            st.write(f"{label.capitalize()}: {prob*100:.2f}%")
+                else:
+                    st.success(f"Prediksi: **{bert_prediction.capitalize()}**")
+            
+            # Comparison chart
+            if isinstance(nb_prediction, dict) and isinstance(bert_prediction, dict) and 'probabilities' in nb_prediction and 'probabilities' in bert_prediction:
+                st.divider()
+                st.markdown("#### 📊 Perbandingan Probabilitas")
+                
+                # Prepare data for comparison
+                labels = list(nb_prediction['probabilities'].keys())
+                nb_probs = [nb_prediction['probabilities'][label] for label in labels]
+                bert_probs = [bert_prediction['probabilities'][label] for label in labels]
+                
+                # Create grouped bar chart
+                fig = go.Figure(data=[
+                    go.Bar(name='Naive Bayes', x=[l.capitalize() for l in labels], y=nb_probs, marker_color='#636EFA'),
+                    go.Bar(name='IndoBERT', x=[l.capitalize() for l in labels], y=bert_probs, marker_color='#00CC96')
+                ])
+                
+                fig.update_layout(
+                    barmode='group',
+                    yaxis_title='Probabilitas',
+                    yaxis=dict(range=[0, 1]),
+                    height=350,
+                    showlegend=True
+                )
+                
+                st.plotly_chart(fig, use_container_width=True)
 
 # PAGE 2: NAIVE BAYES
 elif selected_page == "🤖 Naive Bayes":

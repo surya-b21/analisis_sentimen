@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import json
+import os
 
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from sklearn.model_selection import train_test_split
@@ -8,14 +9,43 @@ from datasets import Dataset
 from transformers import Trainer, TrainingArguments
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support, classification_report, confusion_matrix
 
+def predict_sentiment(text):
+    try:
+        if not os.path.exists('indobert_sentiment_model'):
+            return {
+                'error': 'Model directory not found. Please train the model first.'
+            }
+        
+        # Load the trained model and tokenizer
+        model = AutoModelForSequenceClassification.from_pretrained('indobert_sentiment_model')
+        tokenizer = AutoTokenizer.from_pretrained('indobert_sentiment_model')
+
+        # Tokenize input text
+        inputs = tokenizer(text, return_tensors='pt', padding=True, truncation=True, max_length=128)
+
+        # Get model predictions
+        outputs = model(**inputs)
+        logits = outputs.logits
+        predicted_class_id = logits.argmax().item()
+
+        # Map class ID to label
+        id2label = {0: 'negative', 1: 'positive', 2: 'neutral'}
+        predicted_label = id2label.get(predicted_class_id, 'unknown')
+
+        return predicted_label
+    except Exception as e:
+        return {
+            'error': f'An error occurred during prediction: {str(e)}'
+        }
+
 def main():
     print("Loading data...")
-    df = pd.read_csv('dataset_used.csv', encoding='utf-8', on_bad_lines='skip', engine='python')
+    df = pd.read_csv('vader_result.csv', encoding='utf-8', on_bad_lines='skip', engine='python')
     df.columns = df.columns.str.strip()  # Remove whitespace from column names
 
     # label mapping
-    label2id = {'negative': 0, 'positive': 1}
-    id2label = {0: 'negative', 1: 'positive'}
+    label2id = {'negative': 0, 'positive': 1, 'neutral': 2}
+    id2label = {0: 'negative', 1: 'positive', 2: 'neutral'}
 
     df['label'] = df['label'].str.strip().map(label2id)  # Remove whitespace and map labels
 
@@ -38,7 +68,7 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     model = AutoModelForSequenceClassification.from_pretrained(
         MODEL_NAME,
-        num_labels=2,
+        num_labels=3,
         id2label=id2label,
         label2id=label2id
     )
@@ -100,13 +130,13 @@ def main():
     print(classification_report(
         true_labels, 
         pred_labels, 
-        target_names=['negative', 'positive']
+        target_names=['negative', 'positive', 'neutral']
     ))
 
     conf_matrix = confusion_matrix(true_labels, pred_labels)
     print("\nConfusion Matrix:")
     
-    labels_list = ['negative', 'positive']
+    labels_list = ['negative', 'positive', 'neutral']
     conf_df = pd.DataFrame(
         conf_matrix,
         index=[f'Actual {label}' for label in labels_list],
@@ -154,6 +184,11 @@ def main():
         json.dump(results, f, ensure_ascii=False, indent=2)
     
     print("\n✅ Results saved to indobert_results.json")
+
+    # Save trained model
+    model.save_pretrained('indobert_sentiment_model')
+    tokenizer.save_pretrained('indobert_sentiment_model')
+    print("✅ Model and tokenizer saved to indobert_sentiment_model")
 
 if __name__ == "__main__":
     main()
