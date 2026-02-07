@@ -1,42 +1,42 @@
 {
   "model": "Naive Bayes + TF-IDF",
   "overall_metrics": {
-    "accuracy": 0.6097402597402597,
-    "accuracy_percentage": 60.97402597402597
+    "accuracy": 0.6038961038961039,
+    "accuracy_percentage": 60.3896103896104
   },
   "per_class_metrics": {
     "negative": {
-      "precision": 0.5895953757225434,
-      "recall": 0.9760765550239234,
-      "f1": 0.7351351351351352
+      "precision": 0.5893371757925072,
+      "recall": 0.9761336515513126,
+      "f1": 0.7349505840071878
     },
     "neutral": {
-      "precision": 0.9090909090909091,
-      "recall": 0.09090909090909091,
-      "f1": 0.1652892561983471
+      "precision": 0.7142857142857143,
+      "recall": 0.045454545454545456,
+      "f1": 0.08547008547008547
     },
     "positive": {
-      "precision": 0.7686567164179104,
-      "recall": 0.2128099173553719,
-      "f1": 0.3333333333333333
+      "precision": 0.7391304347826086,
+      "recall": 0.21161825726141079,
+      "f1": 0.32903225806451614
     }
   },
   "confusion_matrix": {
     "matrix": [
       [
-        816,
-        2,
-        18
+        409,
+        1,
+        9
       ],
       [
-        187,
-        20,
-        13
+        96,
+        5,
+        9
       ],
       [
-        381,
-        0,
-        103
+        189,
+        1,
+        51
       ]
     ],
     "labels": [
@@ -46,9 +46,9 @@
     ]
   },
   "dataset_info": {
-    "total_samples": 7698,
-    "train_samples": 6158,
-    "test_samples": 1540,
+    "total_samples": 7692,
+    "train_samples": 6922,
+    "test_samples": 770,
     "classes": [
       "negative",
       "neutral",

@@ -83,11 +83,11 @@ def main():
     data = read_csv()
     print(f"Total samples: {len(data)}")
 
-    # split data into 80% train and 20% test
+    # split data into 90% train and 10% test
     texts = [d[0] for d in data]
     labels = [d[1] for d in data]
     train_texts, test_texts, train_labels, test_labels = train_test_split(
-        texts, labels, test_size=0.2, random_state=42, stratify=labels
+        texts, labels, test_size=0.1, random_state=42, stratify=labels
     )
     
     # vectorize (tf-idf)

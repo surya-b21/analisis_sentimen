@@ -49,10 +49,10 @@ def main():
 
     df['label'] = df['label'].str.strip().map(label2id)  # Remove whitespace and map labels
 
-    # membagi data menjadi 80% train dan 20% test
+    # membagi data menjadi 90% train dan 10% test
     train_df, test_df = train_test_split(
         df,
-        test_size=0.2,
+        test_size=0.1,
         random_state=42,
         stratify=df['label']
     )
@@ -92,9 +92,15 @@ def main():
         per_device_train_batch_size=8,
         per_device_eval_batch_size=8,
         eval_strategy='epoch',
-        save_strategy='epoch',
+        save_strategy='no',
         logging_dir='./logs',
-        load_best_model_at_end=True,
+        logging_steps=50,
+        load_best_model_at_end=False,
+        seed=42,
+        data_seed=42,
+        learning_rate=2e-5,
+        weight_decay=0.01,
+        warmup_ratio=0.1
     )
 
     trainer = Trainer(

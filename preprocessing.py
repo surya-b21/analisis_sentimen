@@ -68,8 +68,8 @@ def remove_noise(text):
     # Step 2: Replace multiple spaces with single space
     text = re.sub(r'\s+', ' ', text)
     
-    # Step 3: Remove unwanted characters except ? and !
-    text = re.sub(r"[^a-zA-Z0-9\s\?\!]", "", text)
+    # Step 3: Remove unwanted characters
+    text = re.sub(r"[^a-zA-Z0-9\s]", "", text)
     
     # Step 4: Clean up extra spaces again after removing special chars
     text = re.sub(r'\s+', ' ', text).strip()
